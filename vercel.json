@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd clothespin-final-product/web && npm run build",
+  "outputDirectory": "clothespin-final-product/web/dist",
+  "devCommand": "cd clothespin-final-product/web && npm run dev",
+  "installCommand": "cd clothespin-final-product/web && npm install",
+  "framework": "vite"
+}
