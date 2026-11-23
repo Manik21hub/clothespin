@@ -1,0 +1,627 @@
+import SwiftUI
+
+struct HomeView: View {
+    @Binding var selectedTab: Int
+    @State private var showingProfileModal = false
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // TOP: Outfit of the Day (Primary Action)
+                    VStack(spacing: 16) {
+                        Text("catalog my closet")
+                            .font(.custom("Poppins-SemiBold", size: 18))
+                            .foregroundColor(.darkGreen)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Button(action: {
+                            selectedTab = 2 // Navigate to Add Outfit tab
+                        }) {
+                            HStack(spacing: 12) {
+                                Image("PinIcon")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 50, height: 50)
+                                    .rotationEffect(.degrees(45))
+                                Text("pin my outfit of the day!")
+                                    .font(.custom("Poppins-SemiBold", size: 16))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color(red: 0.373, green: 0.424, blue: 0.216)) // #5F6C37
+                            .cornerRadius(50)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    
+                    // MIDDLE: News Feed with Quick Actions
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("track my wardrobe")
+                            .font(.custom("Poppins-SemiBold", size: 18))
+                            .foregroundColor(.darkGreen)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // Tracking highlights with quick actions
+                        VStack(spacing: 12) {
+                            // Good news - leads to insights
+                            TrackingHighlightCard(
+                                title: "great rotation!",
+                                message: "you've worn your brown cargo pants 8 times this month",
+                                itemImage: "img_001",
+                                iconName: "lightbulb.fill",
+                                action: { selectedTab = 3 } // Navigate to Stats/Insights tab
+                            )
+                            
+                            
+                            // Closet audit - leads to closet sorted by least worn
+                            TrackingHighlightCard(
+                                title: "closet audit needed",
+                                message: "5 items haven't been worn in 30+ days",
+                                itemImage: "img_008",
+                                iconName: "cabinet.fill",
+                                action: { 
+                                    selectedTab = 1 // Navigate to Closet tab
+                                    // TODO: Set sort to "least recent" when we implement that
+                                }
+                            )
+                            
+                            // View insights text link
+                            Button(action: {
+                                selectedTab = 3 // Navigate to Stats/Insights tab
+                            }) {
+                                HStack(spacing: 8) {
+                                    Text("view more stats and analytics")
+                                        .font(.custom("Poppins-Medium", size: 16))
+                                        .foregroundColor(.darkGreen)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.primary)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(50)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // BOTTOM: Quick Access to Insights
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("rewear or donate")
+                            .font(.custom("Poppins-SemiBold", size: 18))
+                            .foregroundColor(.darkGreen)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // Haven't worn - leads to donate
+                            TrackingHighlightCard(
+                                title: "time to donate",
+                                message: "your blue dress hasn't been worn in 45 days",
+                                itemImage: "img_005",
+                                iconName: "arrow.3.trianglepath",
+                                action: { selectedTab = 4 } // Navigate to Donate tab
+                            )
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 100) // Space for tab bar
+                }
+        }
+        .navigationTitle("hello, krystal ✨")
+        .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor.white
+                appearance.titleTextAttributes = [
+                    .font: UIFont(name: "Poppins-SemiBold", size: 22) ?? UIFont.systemFont(ofSize: 22, weight: .semibold),
+                    .foregroundColor: UIColor(Color.darkGreen)
+                ]
+                appearance.largeTitleTextAttributes = [
+                    .font: UIFont(name: "Poppins-SemiBold", size: 34) ?? UIFont.systemFont(ofSize: 34, weight: .semibold),
+                    .foregroundColor: UIColor(Color.darkGreen)
+                ]
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+            }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                // Profile Button
+                Button(action: {
+                    showingProfileModal = true
+                }) {
+                    Image(systemName: "person.fill")
+                        .font(.title3)
+                        .foregroundColor(.gray)
+                }
+            }
+        }
+        .sheet(isPresented: $showingProfileModal) {
+            ProfileModal()
+        }
+        }
+    }
+}
+
+struct HomeStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.primary)
+            
+            Text(value)
+                .font(.custom("Poppins-Bold", size: 22))
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+            
+            Text(title)
+                .font(.custom("Poppins-Regular", size: 12))
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .background(Color.cardBackground)
+        .shadow(color: Color.border, radius: 2, x: 0, y: 1)
+        .cornerRadius(12)
+    }
+}
+
+struct ActivityRow: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(.primary)
+                .frame(width: 20)
+            
+            Text(text)
+                .font(.custom("Poppins-Regular", size: 16))
+                .foregroundColor(.textSecondary)
+            
+            Spacer()
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+struct RarelyWornItemCard: View {
+    let name: String
+    let category: String
+    let wearCount: Int
+    let icon: String
+    @Binding var selectedTab: Int
+    @ObservedObject var pointsManager: PointsManager
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.primary)
+                .frame(width: 30)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.custom("Poppins-Medium", size: 16))
+                    .foregroundColor(.textPrimary)
+                
+                Text(category)
+                    .font(.custom("Poppins-Regular", size: 12))
+                    .foregroundColor(.textSecondary)
+                
+                Text(wearCount == 0 ? "never worn" : "worn \(wearCount)x")
+                    .font(.custom("Poppins-Medium", size: 10))
+                    .foregroundColor(.accent)
+                    .fontWeight(.medium)
+                
+                // Points indicator
+                HStack(spacing: 4) {
+                    Image(systemName: "star.fill")
+                        .font(.caption2)
+                        .foregroundColor(.yellow)
+                    Text("+10 pts")
+                        .font(.custom("Poppins-Regular", size: 10))
+                        .foregroundColor(.textSecondary)
+                }
+            }
+            
+            Spacer()
+            
+            Button("wear today") {
+                // Award points for wearing rare item
+                pointsManager.addWearRareItemPoints(itemName: name)
+                selectedTab = 2 // Navigate to Add Outfit tab
+            }
+            .font(.custom("Poppins-Medium", size: 12))
+            .fontWeight(.medium)
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.accent) // Warm brown
+            .cornerRadius(20) // More rounded like the design
+        }
+        .padding()
+        .background(Color.cardBackground)
+        .cornerRadius(12)
+        .shadow(color: Color.border, radius: 2, x: 0, y: 1)
+    }
+}
+
+// MARK: - News Item Card
+
+enum NewsItemType {
+    case good, bad, audit
+}
+
+struct NewsItemCard: View {
+    let type: NewsItemType
+    let title: String
+    let message: String
+    let actionText: String
+    let itemImage: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Item image
+            Rectangle()
+                .fill(Color(.systemGray6))
+                .frame(width: 60, height: 80)
+                .cornerRadius(8)
+                .overlay(
+                    Group {
+                        if let image = UIImage(named: itemImage) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } else {
+                            Image(systemName: "tshirt")
+                                .font(.system(size: 24))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                )
+                .clipped()
+            
+            // Content
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.custom("Poppins-SemiBold", size: 16))
+                    .foregroundColor(.primary)
+                
+                Text(message)
+                    .font(.custom("Poppins-Regular", size: 14))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                
+                Spacer()
+                
+                // Action button
+                Button(action: {
+                    // Handle action based on type
+                    if type == .bad {
+                        // Navigate to closet or donation
+                    } else {
+                        // Show encouragement or stats
+                    }
+                }) {
+                    Text(actionText)
+                        .font(.custom("Poppins-Medium", size: 12))
+                        .foregroundColor(type == .good ? .white : .primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(type == .good ? Color.green : Color(.systemGray5))
+                        .cornerRadius(16)
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(.systemGray4), radius: 2, x: 0, y: 1)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(borderColor, lineWidth: 1)
+        )
+    }
+    
+    private var borderColor: Color {
+        switch type {
+        case .good:
+            return Color.green.opacity(0.3)
+        case .bad:
+            return Color.orange.opacity(0.3)
+        case .audit:
+            return Color.blue.opacity(0.3)
+        }
+    }
+}
+
+// MARK: - Tracking Highlight Card
+
+struct TrackingHighlightCard: View {
+    let title: String
+    let message: String
+    let itemImage: String
+    let iconName: String
+    let action: () -> Void
+    @State private var loadedImage: UIImage?
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Square image on left
+            Rectangle()
+                .fill(Color(.systemGray6))
+                .frame(width: 80, height: 80)
+                .cornerRadius(8)
+                .overlay(
+                    Group {
+                        if let image = loadedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                        } else {
+                            Image(systemName: "tshirt")
+                                .font(.system(size: 24))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                )
+                .clipped()
+            
+            // Text content
+            VStack(alignment: .leading, spacing: 4) {
+                // Main announcement - matching app style
+                Text(title)
+                    .font(.custom("Poppins-SemiBold", size: 16))
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                // Subtitle - flexible height to fit content
+                Text(message)
+                    .font(.custom("Poppins-Regular", size: 14))
+                    .foregroundColor(.secondary)
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            Spacer()
+            
+            // Green rounded icon button
+            Button(action: action) {
+                Image(systemName: iconName)
+                    .font(.title2)
+                    .foregroundColor(.white)
+                    .frame(width: 50, height: 50)
+                    .background(Color(red: 0.373, green: 0.424, blue: 0.216)) // #5F6C37
+                    .clipShape(Circle())
+            }
+        }
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color(.systemGray4), radius: 2, x: 0, y: 1)
+        .onAppear {
+            loadImage()
+        }
+    }
+    
+    private func loadImage() {
+        if let image = UIImage(named: itemImage) {
+            loadedImage = image
+        }
+    }
+    
+}
+
+struct ProfileModal: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Profile Header
+                    VStack(spacing: 8) {
+                        Image("ProfilePhoto")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                        
+                        Text("krystal")
+                            .font(.custom("Poppins-Bold", size: 28))
+                            .fontWeight(.bold)
+                            .foregroundColor(.textPrimary)
+                        
+                        Text("@hackingsustainability25")
+                            .font(.custom("Poppins-Regular", size: 16))
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 20)
+                    
+                    // Stats Cards
+                    VStack(spacing: 16) {
+                        Text("your stats")
+                            .font(.custom("Poppins-Bold", size: 22))
+                            .fontWeight(.bold)
+                            .foregroundColor(.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: 16) {
+                            HomeStatCard(title: "items in closet", value: "16", icon: "tshirt.fill")
+                            HomeStatCard(title: "worn this week", value: "4", icon: "calendar")
+                            HomeStatCard(title: "items to donate", value: "3", icon: "heart.fill")
+                            HomeStatCard(title: "sustainability score", value: "85%", icon: "leaf.fill")
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    // Points and Rewards Section
+                    VStack(spacing: 16) {
+                        Text("points & rewards")
+                            .font(.custom("Poppins-Bold", size: 22))
+                            .fontWeight(.bold)
+                            .foregroundColor(.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        HStack(spacing: 16) {
+                            // Points Display
+                            VStack(spacing: 8) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "star.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.yellow)
+                                    
+                                    Text("1,250")
+                                        .font(.custom("Poppins-Bold", size: 24))
+                                        .foregroundColor(.textPrimary)
+                                }
+                                
+                                Text("total points")
+                                    .font(.custom("Poppins-Regular", size: 14))
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            
+                            // Rewards Button
+                            Button(action: {
+                                // Navigate to donate page for rewards
+                            }) {
+                                VStack(spacing: 8) {
+                                    Image(systemName: "gift.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.white)
+                                    
+                                    Text("redeem")
+                                        .font(.custom("Poppins-SemiBold", size: 16))
+                                        .foregroundColor(.white)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(red: 0.373, green: 0.424, blue: 0.216))
+                                .cornerRadius(12)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    // Insights Section
+                    VStack(spacing: 16) {
+                        Text("insights")
+                            .font(.custom("Poppins-Bold", size: 22))
+                            .fontWeight(.bold)
+                            .foregroundColor(.textPrimary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        VStack(spacing: 12) {
+                            AchievementRow(
+                                icon: "leaf.fill",
+                                title: "eco warrior",
+                                description: "maintained 85% sustainability score",
+                                isUnlocked: true
+                            )
+                            
+                            AchievementRow(
+                                icon: "heart.fill",
+                                title: "giving spirit",
+                                description: "donated 3 items this month",
+                                isUnlocked: true
+                            )
+                            
+                            AchievementRow(
+                                icon: "clock.fill",
+                                title: "consistent wardrobe",
+                                description: "worn 4 items this week",
+                                isUnlocked: true
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                    
+                    Spacer(minLength: 50)
+                }
+                .padding()
+            }
+            .navigationTitle("profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct AchievementRow: View {
+    let icon: String
+    let title: String
+    let description: String
+    let isUnlocked: Bool
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(isUnlocked ? .primary : .gray)
+                .frame(width: 30)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.custom("Poppins-Medium", size: 16))
+                    .fontWeight(.medium)
+                    .foregroundColor(isUnlocked ? .textPrimary : .gray)
+                
+                Text(description)
+                    .font(.custom("Poppins-Regular", size: 12))
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(2)
+            }
+            
+            Spacer()
+            
+            if isUnlocked {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                    .font(.title3)
+            } else {
+                Image(systemName: "lock.circle.fill")
+                    .foregroundColor(.gray)
+                    .font(.title3)
+            }
+        }
+        .padding()
+        .background(Color.cardBackground)
+        .cornerRadius(12)
+        .shadow(color: Color.border, radius: 2, x: 0, y: 1)
+        .opacity(isUnlocked ? 1.0 : 0.6)
+    }
+}
+
+struct HomeView_Previews: PreviewProvider {
+    static var previews: some View {
+        HomeView(selectedTab: .constant(0))
+    }
+}
