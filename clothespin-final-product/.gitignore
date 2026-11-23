@@ -167,6 +167,10 @@ uploads/
 *.bmp
 *.tiff
 
+# Bundled web app assets must be included in deployments.
+!web/public/images/
+!web/public/images/**
+
 # Model files (if you download large models)
 *.pth
 *.pt
